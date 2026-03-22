@@ -105,7 +105,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             duration: t.duration,
             coverUrl: t.album.cover_medium,
             source: "deezer" as const,
-            loadPath: `dz${t.id}`,
+            loadPath: `deezer:${t.id}`,
           })
         );
         set({ searchResults: tracks });
@@ -165,10 +165,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   addToQueue: async (track) => {
     const { ngrokUrl, bearerToken } = get();
-    const cmd =
-      track.source === "deezer"
-        ? `automix_add_next "${track.loadPath}"`
-        : `automix_add_next "${track.loadPath}"`;
+    const cmd = `automix_add_next "${track.loadPath}"`;
     await vdjExecute(ngrokUrl, bearerToken, cmd);
     // Refrescar la cola después de añadir
     setTimeout(() => get().refreshQueue(), 500);
