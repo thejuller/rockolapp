@@ -132,7 +132,8 @@ export const useAppStore = create<AppState>((set, get) => ({
             bearerToken,
             `get_browsed_song 'title' ${i}`
           );
-          if (!titleRes.ok || !titleRes.data?.trim()) break;
+          // Si el query falla o VDJ devuelve un error genérico (vía Network Control)
+          if (!titleRes.ok || !titleRes.data?.trim() || titleRes.data.toLowerCase().startsWith("error:")) break;
 
           const artistRes = await vdjQuery(
             ngrokUrl,
@@ -186,7 +187,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           bearerToken,
           `get_automix_song 'title' ${i}`
         );
-        if (!res.ok || !res.data?.trim()) break;
+        // Si no hay datos o VDJ devuelve un error genérico, asumimos fin de cola
+        if (!res.ok || !res.data?.trim() || res.data.toLowerCase().startsWith("error:")) break;
 
         const artistRes = await vdjQuery(
           ngrokUrl,

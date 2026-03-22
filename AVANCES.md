@@ -12,4 +12,5 @@
 | 21/03 | Pantalla configuración ngrok + token | `app/setup/page.tsx` | Crear dashboard |
 | 21/03 | Componentes: ConnectionStatus, SearchBar, TrackCard, AutomixQueue | `components/*.tsx` | Dashboard |
 | 21/03 | Dashboard principal con buscador + cola automix | `app/dashboard/page.tsx` | Verificar build |
+| 22/03 | Fix: errores en cola automix y búsqueda VDJ | `lib/store.ts` | Verificar estabilidad de polling |
 | 21/03 | Build exitoso + verificación visual | Todos | Deploy Vercel |
