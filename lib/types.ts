@@ -18,6 +18,7 @@ export interface DeezerTrack {
   duration: number;
   artist: { name: string };
   album: { title: string; cover_small: string; cover_medium: string };
+  link: string;
 }
 
 export interface DeezerSearchResponse {

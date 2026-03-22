@@ -12,5 +12,5 @@
 | 21/03 | Pantalla configuración ngrok + token | `app/setup/page.tsx` | Crear dashboard |
 | 21/03 | Componentes: ConnectionStatus, SearchBar, TrackCard, AutomixQueue | `components/*.tsx` | Dashboard |
 | 21/03 | Dashboard principal con buscador + cola automix | `app/dashboard/page.tsx` | Verificar build |
+| 22/03 | Fix: carga de Deezer vía URL completa (link) | `lib/store.ts` | Probar si VDJ la acepta |
 | 22/03 | Fix: carga de Deezer (prefijo deezer:ID) | `lib/store.ts` | Probar si carga en VDJ |
-| 22/03 | Fix: errores en cola automix y búsqueda VDJ | `lib/store.ts` | Verificar estabilidad de polling |
