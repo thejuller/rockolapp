@@ -1,0 +1,48 @@
+import type { VdjProxyResponse } from "./types";
+
+/**
+ * Ejecuta un query VDJScript a través del proxy /api/vdj
+ */
+export async function vdjQuery(
+  ngrokUrl: string,
+  bearerToken: string,
+  script: string
+): Promise<VdjProxyResponse> {
+  const res = await fetch("/api/vdj", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "query", script, ngrokUrl, bearerToken }),
+  });
+  return res.json();
+}
+
+/**
+ * Ejecuta un comando VDJScript a través del proxy /api/vdj
+ */
+export async function vdjExecute(
+  ngrokUrl: string,
+  bearerToken: string,
+  script: string
+): Promise<VdjProxyResponse> {
+  const res = await fetch("/api/vdj", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "execute", script, ngrokUrl, bearerToken }),
+  });
+  return res.json();
+}
+
+/**
+ * Ping al VDJ para verificar conexión
+ */
+export async function vdjPing(
+  ngrokUrl: string,
+  bearerToken: string
+): Promise<boolean> {
+  try {
+    const result = await vdjQuery(ngrokUrl, bearerToken, "get_clock");
+    return result.ok;
+  } catch {
+    return false;
+  }
+}
