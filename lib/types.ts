@@ -8,7 +8,7 @@ export interface Track {
   duration?: number;
   coverUrl?: string;
   source: "vdj" | "deezer";
-  /** Ruta local (VDJ) o ID Deezer con prefijo dz */
+  /** Ruta local (VDJ) o "deezer:{id}" para pistas de Deezer */
   loadPath: string;
 }
 

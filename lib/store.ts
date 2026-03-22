@@ -105,7 +105,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             duration: t.duration,
             coverUrl: t.album.cover_medium,
             source: "deezer" as const,
-            loadPath: t.link,
+            loadPath: `deezer:${t.id}`,
           })
         );
         set({ searchResults: tracks });
