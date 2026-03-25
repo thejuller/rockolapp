@@ -165,10 +165,34 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   addToQueue: async (track) => {
     const { ngrokUrl, bearerToken } = get();
-    const cmd = `automix_add_next "${track.loadPath}"`;
-    await vdjExecute(ngrokUrl, bearerToken, cmd);
+
+    if (track.source === "deezer") {
+      // Para pistas Deezer: buscar en la fuente Deezer de VDJ
+      await vdjExecute(ngrokUrl, bearerToken, "browser_source 'Deezer'");
+      await new Promise((r) => setTimeout(r, 300));
+
+      const searchQuery = `${track.title} ${track.artist}`.trim();
+      await vdjExecute(
+        ngrokUrl,
+        bearerToken,
+        `browser_search "${searchQuery}"`
+      );
+      await new Promise((r) => setTimeout(r, 500));
+
+      // Seleccionar el primer resultado
+      await vdjExecute(ngrokUrl, bearerToken, "browser_click top");
+      await new Promise((r) => setTimeout(r, 200));
+
+      // Agregar a automix
+      await vdjExecute(ngrokUrl, bearerToken, "automix_add_next");
+    } else {
+      // Para pistas locales: usar la ruta directamente
+      const cmd = `automix_add_next "${track.loadPath}"`;
+      await vdjExecute(ngrokUrl, bearerToken, cmd);
+    }
+
     // Refrescar la cola después de añadir
-    setTimeout(() => get().refreshQueue(), 500);
+    setTimeout(() => get().refreshQueue(), 800);
   },
 
   refreshQueue: async () => {
@@ -210,7 +234,30 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadTrackToDeck: async (track, deck = 1) => {
     const { ngrokUrl, bearerToken } = get();
-    const cmd = `deck ${deck} load "${track.loadPath}"`;
-    await vdjExecute(ngrokUrl, bearerToken, cmd);
+
+    if (track.source === "deezer") {
+      // Para pistas Deezer: buscar en la fuente Deezer de VDJ
+      await vdjExecute(ngrokUrl, bearerToken, "browser_source 'Deezer'");
+      await new Promise((r) => setTimeout(r, 300));
+
+      const searchQuery = `${track.title} ${track.artist}`.trim();
+      await vdjExecute(
+        ngrokUrl,
+        bearerToken,
+        `browser_search "${searchQuery}"`
+      );
+      await new Promise((r) => setTimeout(r, 500));
+
+      // Seleccionar el primer resultado
+      await vdjExecute(ngrokUrl, bearerToken, "browser_click top");
+      await new Promise((r) => setTimeout(r, 200));
+
+      // Cargar en el deck
+      await vdjExecute(ngrokUrl, bearerToken, `deck ${deck} load`);
+    } else {
+      // Para pistas locales: usar la ruta directamente
+      const cmd = `deck ${deck} load "${track.loadPath}"`;
+      await vdjExecute(ngrokUrl, bearerToken, cmd);
+    }
   },
 }));
