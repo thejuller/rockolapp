@@ -6,10 +6,8 @@ import { useAppStore } from "@/lib/store";
 export function SearchBar() {
   const {
     searchQuery,
-    searchSource,
     isSearching,
     setSearchQuery,
-    setSearchSource,
     search,
   } = useAppStore();
 
@@ -37,23 +35,6 @@ export function SearchBar() {
 
   return (
     <div className="search-container">
-      <div className="tabs">
-        <button
-          className={`tab ${searchSource === "deezer" ? "active" : ""}`}
-          onClick={() => setSearchSource("deezer")}
-          type="button"
-        >
-          🎵 Deezer
-        </button>
-        <button
-          className={`tab ${searchSource === "vdj" ? "active" : ""}`}
-          onClick={() => setSearchSource("vdj")}
-          type="button"
-        >
-          💿 Biblioteca VDJ
-        </button>
-      </div>
-
       <form onSubmit={handleSubmit} style={{ padding: "1rem" }}>
         <div className="search-input-wrap">
           <span className="search-icon">🔍</span>
@@ -61,11 +42,7 @@ export function SearchBar() {
             id="search-input"
             type="text"
             className="input"
-            placeholder={
-              searchSource === "deezer"
-                ? "Buscar en Deezer…"
-                : "Buscar en tu biblioteca VDJ…"
-            }
+            placeholder="Busca artistas o canciones…"
             value={searchQuery}
             onChange={(e) => handleInputChange(e.target.value)}
             autoComplete="off"

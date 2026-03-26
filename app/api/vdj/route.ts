@@ -23,7 +23,14 @@ export async function POST(request: NextRequest) {
     const baseUrl = ngrokUrl.replace(/\/+$/, "");
     const url = `${baseUrl}/${action}?script=${encodeURIComponent(script)}`;
 
-    const headers: Record<string, string> = {};
+    // Log server-side para depuración
+    console.log(`[VDJ Proxy] ${action}: ${script}`);
+    console.log(`[VDJ Proxy] URL: ${url}`);
+
+    const headers: Record<string, string> = {
+      // Necesario para que ngrok free no intercepte con su página de advertencia
+      "ngrok-skip-browser-warning": "true",
+    };
     if (bearerToken) {
       headers["Authorization"] = `Bearer ${bearerToken}`;
     }
@@ -45,6 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.text();
+    console.log(`[VDJ Proxy] Response: ${data.substring(0, 200)}`);
 
     return NextResponse.json({ ok: true, data });
   } catch (error) {

@@ -83,7 +83,7 @@ export default function DashboardPage() {
             {searchResults.length === 0 && (
               <div className="empty-state" style={{ marginTop: "2rem" }}>
                 <div className="empty-state-icon">🔍</div>
-                <p>Busca canciones en Deezer o en tu biblioteca de VDJ</p>
+                <p>Busca cualquier canción o artista para añadir al Automix</p>
               </div>
             )}
           </div>
