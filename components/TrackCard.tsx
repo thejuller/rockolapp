@@ -1,15 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import type { Track } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
-
-function formatDuration(seconds?: number): string {
-  if (!seconds) return "";
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
+import type { Track } from "@/lib/types";
+import { Plus, Music } from "lucide-react";
+import Image from "next/image";
 
 interface TrackCardProps {
   track: Track;
@@ -17,57 +11,55 @@ interface TrackCardProps {
 }
 
 export function TrackCard({ track, index }: TrackCardProps) {
-  const { addToQueue, loadTrackToDeck } = useAppStore();
+  const { addToQueue, isLoadingQueue } = useAppStore();
+
+  const handleAddToQueue = async () => {
+    await addToQueue(track);
+  };
 
   return (
-    <motion.div
-      className="track-card card"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, delay: index * 0.03 }}
-    >
+    <div className="track-card animate-in" style={{ animationDelay: `${index * 50}ms` }}>
       {track.coverUrl ? (
-        <img
-          src={track.coverUrl}
-          alt={track.title}
-          className="track-cover"
-          loading="lazy"
-        />
+        <div className="track-img" style={{ position: 'relative', overflow: 'hidden' }}>
+          <Image 
+            src={track.coverUrl} 
+            alt={track.title} 
+            fill 
+            sizes="56px"
+            style={{ objectFit: 'cover' }}
+          />
+        </div>
       ) : (
-        <div className="track-cover-placeholder">♪</div>
+        <div className="track-img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+          <Music size={24} />
+        </div>
       )}
 
-      <div className="track-info">
-        <div className="track-title" title={track.title}>
-          {track.title}
-        </div>
-        <div className="track-artist" title={track.artist}>
-          {track.artist}
-          {track.album && ` · ${track.album}`}
-        </div>
-        {track.duration !== undefined && track.duration > 0 && (
-          <span className="track-duration">
-            {formatDuration(track.duration)}
-          </span>
-        )}
+      <div className="track-meta">
+        <span className="track-title">{track.title}</span>
+        <span className="track-artist">{track.artist}</span>
       </div>
 
-      <div className="track-actions">
+      <div className="track-actions" style={{ flexShrink: 0 }}>
         <button
-          className="btn btn-icon"
-          title="Cargar en Deck 1"
-          onClick={() => loadTrackToDeck(track, 1)}
+          className="btn btn-primary"
+          onClick={handleAddToQueue}
+          disabled={isLoadingQueue}
+          title="Añadir a la Cola"
+          aria-label={`Pedir ${track.title}`}
+          style={{ 
+            padding: '0.625rem 1rem', 
+            fontSize: '0.8125rem', 
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.375rem'
+          }}
         >
-          ▶
-        </button>
-        <button
-          className="btn btn-icon"
-          title="Añadir a la cola Automix"
-          onClick={() => addToQueue(track)}
-        >
-          ＋
+          <Plus size={16} />
+          <span style={{ fontWeight: 700 }}>PEDIR</span>
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }

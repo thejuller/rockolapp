@@ -1,68 +1,86 @@
 "use client";
 
-import { useRef, useCallback, FormEvent } from "react";
 import { useAppStore } from "@/lib/store";
+import { Search, X, Loader2 } from "lucide-react";
+import { FormEvent } from "react";
 
 export function SearchBar() {
-  const {
-    searchQuery,
-    isSearching,
-    setSearchQuery,
-    search,
-  } = useAppStore();
+  const { searchQuery, setSearchQuery, search, isSearching } = useAppStore();
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleInputChange = useCallback(
-    (value: string) => {
-      setSearchQuery(value);
-
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        if (value.trim()) {
-          search();
-        }
-      }, 350);
-    },
-    [setSearchQuery, search]
-  );
-
-  const handleSubmit = (e: FormEvent) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    search();
+    if (searchQuery.trim()) {
+      search();
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   return (
-    <div className="search-container">
-      <form onSubmit={handleSubmit} style={{ padding: "1rem" }}>
-        <div className="search-input-wrap">
-          <span className="search-icon">🔍</span>
-          <input
-            id="search-input"
-            type="text"
-            className="input"
-            placeholder="Busca artistas o canciones…"
-            value={searchQuery}
-            onChange={(e) => handleInputChange(e.target.value)}
-            autoComplete="off"
-          />
+    <form onSubmit={handleSearch} className="search-container" style={{ padding: "1.25rem" }}>
+      <div className="search-input-wrap">
+        <div 
+          className="search-icon" 
+          style={{ 
+            position: 'absolute', 
+            left: '1rem', 
+            top: '50%', 
+            transform: 'translateY(-50%)',
+            color: 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {isSearching ? (
+            <Loader2 className="spinner" size={20} />
+          ) : (
+            <Search size={20} />
+          )}
         </div>
-        {isSearching && (
-          <div
+        
+        <input
+          type="text"
+          className="input"
+          placeholder="Busca artistas, géneros o canciones..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ paddingLeft: "3rem", paddingRight: searchQuery ? "3rem" : "1rem" }}
+        />
+
+        {searchQuery && !isSearching && (
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={clearSearch}
+            aria-label="Limpiar búsqueda"
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              marginTop: "0.75rem",
-              color: "var(--text-muted)",
-              fontSize: "0.8125rem",
+              position: 'absolute',
+              right: '0.5rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: '44px',
+              minHeight: '44px'
             }}
           >
-            <span className="spinner" /> Buscando…
-          </div>
+            <X size={18} />
+          </button>
         )}
-      </form>
-    </div>
+      </div>
+      
+      <button 
+        type="submit" 
+        className="btn btn-primary" 
+        disabled={isSearching || !searchQuery.trim()}
+        style={{ marginTop: "1rem", width: "100%" }}
+      >
+        {isSearching ? "Buscando..." : "Buscar en la Rokola"}
+      </button>
+    </form>
   );
 }

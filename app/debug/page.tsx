@@ -1,8 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAppStore } from "@/lib/store";
+import { useState } from "react";
 import { vdjQuery, vdjExecute } from "@/lib/vdj-client";
+import { 
+  Settings, 
+  Play, 
+  Search, 
+  Terminal, 
+  RefreshCw, 
+  Clock, 
+  Folder, 
+  ChevronUp, 
+  ChevronDown, 
+  Plus, 
+  List, 
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  Loader2
+} from "lucide-react";
 
 interface LogEntry {
   id: number;
@@ -14,25 +30,20 @@ interface LogEntry {
 }
 
 export default function DebugPage() {
-  const { ngrokUrl, bearerToken, loadConnectionFromStorage } = useAppStore();
   const [script, setScript] = useState("");
   const [action, setAction] = useState<"query" | "execute">("query");
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [running, setRunning] = useState(false);
 
-  useEffect(() => {
-    loadConnectionFromStorage();
-  }, [loadConnectionFromStorage]);
-
   const runCommand = async (overrideAction?: "query" | "execute", overrideScript?: string) => {
     const act = overrideAction || action;
     const scr = overrideScript || script;
-    if (!scr.trim() || !ngrokUrl) return;
+    if (!scr.trim()) return;
 
     setRunning(true);
     try {
       const fn = act === "query" ? vdjQuery : vdjExecute;
-      const res = await fn(ngrokUrl, bearerToken, scr);
+      const res = await fn(scr);
       const entry: LogEntry = {
         id: Date.now(),
         time: new Date().toLocaleTimeString(),
@@ -56,7 +67,6 @@ export default function DebugPage() {
     setRunning(false);
   };
 
-  // Diagnóstico automático completo
   const runDiagnostics = async () => {
     setRunning(true);
     const tests = [
@@ -64,202 +74,164 @@ export default function DebugPage() {
       { act: "execute" as const, cmd: "browser_window 'songs'", desc: "Cambiar a vista canciones" },
       { act: "query" as const, cmd: "get_browsed_song 'title'", desc: "Título canción seleccionada" },
       { act: "query" as const, cmd: "get_browsed_song 'artist'", desc: "Artista canción seleccionada" },
-      { act: "query" as const, cmd: "get_browsed_song 'filepath'", desc: "Filepath canción seleccionada" },
       { act: "execute" as const, cmd: "browser_scroll 'top'", desc: "Scroll al inicio" },
-      { act: "query" as const, cmd: "get_browsed_song 'title'", desc: "Título tras scroll top" },
       { act: "execute" as const, cmd: "browser_scroll +1", desc: "Scroll siguiente" },
-      { act: "query" as const, cmd: "get_browsed_song 'title'", desc: "Título tras scroll +1" },
-      { act: "execute" as const, cmd: "browser_search \"test\"", desc: "Buscar 'test'" },
-      { act: "query" as const, cmd: "get_browsed_song 'title'", desc: "Título tras búsqueda" },
       { act: "query" as const, cmd: "get_automix_song 'title' 1", desc: "Automix canción #1" },
-      { act: "query" as const, cmd: "get_automix_song 'title' 2", desc: "Automix canción #2" },
     ];
 
     for (const test of tests) {
-      try {
-        const fn = test.act === "query" ? vdjQuery : vdjExecute;
-        const res = await fn(ngrokUrl, bearerToken, test.cmd);
-        const entry: LogEntry = {
-          id: Date.now() + Math.random(),
-          time: new Date().toLocaleTimeString(),
-          type: test.act,
-          script: `[${test.desc}] ${test.cmd}`,
-          response: JSON.stringify(res, null, 2),
-          ok: res.ok,
-        };
-        setLogs((prev) => [entry, ...prev]);
-      } catch (err) {
-        const entry: LogEntry = {
-          id: Date.now() + Math.random(),
-          time: new Date().toLocaleTimeString(),
-          type: test.act,
-          script: `[${test.desc}] ${test.cmd}`,
-          response: `ERROR: ${err}`,
-          ok: false,
-        };
-        setLogs((prev) => [entry, ...prev]);
-      }
-      // Pausa entre comandos
+      await runCommand(test.act, test.cmd);
       await new Promise((r) => setTimeout(r, 800));
     }
     setRunning(false);
   };
 
-  if (!ngrokUrl) {
-    return (
-      <div style={{ padding: "2rem", color: "#fff", background: "#111", minHeight: "100vh" }}>
-        <h1>⚠️ Sin conexión</h1>
-        <p>Primero configura la conexión en <a href="/setup" style={{ color: "#6cf" }}>/setup</a></p>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: "1.5rem", color: "#e0e0e0", background: "#0d0d0d", minHeight: "100vh", fontFamily: "monospace" }}>
-      <h1 style={{ color: "#fff", marginBottom: "0.5rem" }}>🔧 VDJ Debug Console</h1>
-      <p style={{ color: "#888", fontSize: "0.8rem", marginBottom: "1rem" }}>
-        URL: {ngrokUrl} | Token: {bearerToken ? "***" : "(ninguno)"}
-      </p>
+    <div style={{ padding: "1.5rem", color: "var(--text-primary)", background: "var(--bg-primary)", minHeight: "100vh", fontFamily: "var(--font-inter)" }}>
+      <header style={{ marginBottom: '2rem' }}>
+        <h1 className="font-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.5rem' }}>
+          <Settings size={24} className="text-accent" />
+          VDJ Debug Console
+        </h1>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+          Herramientas de diagnóstico para comandos VDJScript
+        </p>
+      </header>
 
-      {/* Diagnóstico rápido */}
-      <button
-        onClick={runDiagnostics}
-        disabled={running}
-        style={{
-          background: "#2563eb",
-          color: "#fff",
-          border: "none",
-          padding: "0.6rem 1.2rem",
-          borderRadius: "6px",
-          cursor: running ? "wait" : "pointer",
-          fontWeight: 600,
-          marginBottom: "1rem",
-          opacity: running ? 0.6 : 1,
-        }}
-      >
-        {running ? "⏳ Ejecutando..." : "🚀 Ejecutar Diagnóstico Completo"}
-      </button>
-
-      {/* Comando manual */}
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-        <select
-          value={action}
-          onChange={(e) => setAction(e.target.value as "query" | "execute")}
-          style={{ background: "#1a1a1a", color: "#fff", border: "1px solid #333", padding: "0.5rem", borderRadius: "4px" }}
-        >
-          <option value="query">query</option>
-          <option value="execute">execute</option>
-        </select>
-        <input
-          type="text"
-          value={script}
-          onChange={(e) => setScript(e.target.value)}
-          placeholder="VDJScript command..."
-          onKeyDown={(e) => e.key === "Enter" && runCommand()}
-          style={{
-            flex: 1,
-            minWidth: "250px",
-            background: "#1a1a1a",
-            color: "#fff",
-            border: "1px solid #333",
-            padding: "0.5rem 0.75rem",
-            borderRadius: "4px",
-            fontSize: "0.9rem",
-          }}
-        />
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
         <button
-          onClick={() => runCommand()}
+          onClick={runDiagnostics}
           disabled={running}
-          style={{
-            background: "#16a34a",
-            color: "#fff",
-            border: "none",
-            padding: "0.5rem 1rem",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
+          className="btn btn-primary"
+          style={{ padding: '0.6rem 1.25rem' }}
         >
-          Enviar
+          {running ? <Loader2 size={18} className="animate-spin" /> : <Terminal size={18} />}
+          Ejecutar Diagnóstico
+        </button>
+        
+        <button
+          onClick={() => setLogs([])}
+          className="btn btn-secondary"
+        >
+          <Trash2 size={16} />
+          Limpiar Log
         </button>
       </div>
 
-      {/* Botones rápidos */}
-      <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-        {[
-          { label: "🕐 get_clock", act: "query" as const, cmd: "get_clock" },
-          { label: "📁 browser_window songs", act: "execute" as const, cmd: "browser_window 'songs'" },
-          { label: "⬆️ scroll top", act: "execute" as const, cmd: "browser_scroll 'top'" },
-          { label: "⬇️ scroll +1", act: "execute" as const, cmd: "browser_scroll +1" },
-          { label: "🎵 get title", act: "query" as const, cmd: "get_browsed_song 'title'" },
-          { label: "👤 get artist", act: "query" as const, cmd: "get_browsed_song 'artist'" },
-          { label: "📂 get filepath", act: "query" as const, cmd: "get_browsed_song 'filepath'" },
-          { label: "🔍 search test", act: "execute" as const, cmd: 'browser_search "test"' },
-          { label: "➕ automix_add_next", act: "execute" as const, cmd: "automix_add_next" },
-          { label: "📋 automix #1", act: "query" as const, cmd: "get_automix_song 'title' 1" },
-          { label: "📑 playlist_add", act: "execute" as const, cmd: "playlist_add" },
-          { label: "🎧 deck 1 load", act: "execute" as const, cmd: "deck 1 load" },
-        ].map((btn) => (
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <select
+            value={action}
+            onChange={(e) => setAction(e.target.value as "query" | "execute")}
+            className="input"
+            style={{ width: 'auto', background: 'rgba(255,255,255,0.05)' }}
+          >
+            <option value="query">QUERY</option>
+            <option value="execute">EXECUTE</option>
+          </select>
+          <input
+            type="text"
+            className="input"
+            style={{ flex: 1 }}
+            value={script}
+            onChange={(e) => setScript(e.target.value)}
+            placeholder="Escribe un comando VDJScript..."
+            onKeyDown={(e) => e.key === "Enter" && runCommand()}
+          />
           <button
-            key={btn.cmd + btn.act}
-            onClick={() => runCommand(btn.act, btn.cmd)}
+            onClick={() => runCommand()}
             disabled={running}
-            style={{
-              background: "#222",
-              color: "#ccc",
-              border: "1px solid #444",
-              padding: "0.35rem 0.7rem",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "0.75rem",
-            }}
+            className="btn btn-primary"
           >
-            {btn.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Logs */}
-      <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-          <h2 style={{ margin: 0, fontSize: "1rem", color: "#fff" }}>📝 Log ({logs.length})</h2>
-          <button
-            onClick={() => setLogs([])}
-            style={{ background: "transparent", color: "#888", border: "1px solid #333", padding: "0.25rem 0.5rem", borderRadius: "4px", cursor: "pointer", fontSize: "0.75rem" }}
-          >
-            Limpiar
+            <Play size={16} fill="currentColor" />
+            Enviar
           </button>
         </div>
-        <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
+
+        <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", flexWrap: "wrap" }}>
+          {[
+            { label: "Clock", act: "query" as const, cmd: "get_clock", icon: <Clock size={14} /> },
+            { label: "Songs", act: "execute" as const, cmd: "browser_window 'songs'", icon: <Folder size={14} /> },
+            { label: "Scroll Top", act: "execute" as const, cmd: "browser_scroll 'top'", icon: <ChevronUp size={14} /> },
+            { label: "Scroll +1", act: "execute" as const, cmd: "browser_scroll +1", icon: <ChevronDown size={14} /> },
+            { label: "Get Title", act: "query" as const, cmd: "get_browsed_song 'title'", icon: <Search size={14} /> },
+            { label: "Add Next", act: "execute" as const, cmd: "automix_add_next", icon: <Plus size={14} /> },
+            { label: "Queue #1", act: "query" as const, cmd: "get_automix_song 'title' 1", icon: <List size={14} /> },
+          ].map((btn) => (
+            <button
+              key={btn.cmd + btn.act}
+              onClick={() => runCommand(btn.act, btn.cmd)}
+              disabled={running}
+              className="btn btn-secondary"
+              style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+            >
+              {btn.icon}
+              {btn.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="animate-in">
+        <h2 className="font-title" style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <RefreshCw size={18} />
+          Registro de Actividad ({logs.length})
+        </h2>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {logs.map((entry) => (
             <div
               key={entry.id}
+              className="card"
               style={{
-                background: entry.ok ? "#0a1a0a" : "#1a0a0a",
-                border: `1px solid ${entry.ok ? "#1a3a1a" : "#3a1a1a"}`,
-                borderRadius: "6px",
-                padding: "0.6rem 0.8rem",
-                marginBottom: "0.4rem",
-                fontSize: "0.8rem",
+                padding: "1rem",
+                borderLeft: `4px solid ${entry.ok ? 'var(--success)' : 'var(--danger)'}`,
+                background: entry.ok ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)'
               }}
             >
-              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.3rem" }}>
-                <span style={{ color: "#888" }}>{entry.time}</span>
-                <span style={{ color: entry.type === "query" ? "#6cf" : "#fc6", fontWeight: 600 }}>
-                  {entry.type.toUpperCase()}
-                </span>
-                <span style={{ color: entry.ok ? "#4f4" : "#f44" }}>
-                  {entry.ok ? "✅ OK" : "❌ FAIL"}
-                </span>
+              <div style={{ display: "flex", justifyContent: 'space-between', marginBottom: "0.5rem" }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <span style={{ color: "var(--text-muted)", fontSize: '0.75rem' }}>{entry.time}</span>
+                  <span style={{ 
+                    fontSize: '0.7rem', 
+                    fontWeight: 800, 
+                    color: entry.type === 'query' ? '#60a5fa' : '#fbbf24',
+                    background: 'rgba(0,0,0,0.2)',
+                    padding: '0.1rem 0.5rem',
+                    borderRadius: '4px'
+                  }}>
+                    {entry.type.toUpperCase()}
+                  </span>
+                </div>
+                {entry.ok ? (
+                  <CheckCircle2 size={16} className="text-success" />
+                ) : (
+                  <AlertCircle size={16} className="text-danger" />
+                )}
               </div>
-              <div style={{ color: "#fff", marginBottom: "0.25rem" }}>
-                <code>{entry.script}</code>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <code style={{ color: "var(--text-primary)", fontWeight: 600 }}>{entry.script}</code>
               </div>
-              <pre style={{ color: "#aaa", margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+              <pre style={{ 
+                color: "var(--text-secondary)", 
+                margin: 0, 
+                fontSize: '0.8rem',
+                background: 'rgba(0,0,0,0.3)',
+                padding: '0.75rem',
+                borderRadius: '4px',
+                overflowX: 'auto'
+              }}>
                 {entry.response}
               </pre>
             </div>
           ))}
+          
+          {logs.length === 0 && (
+            <div style={{ padding: '4rem', textAlign: 'center', opacity: 0.3 }}>
+              <Terminal size={48} style={{ margin: '0 auto 1rem' }} />
+              <p>No hay actividad registrada.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

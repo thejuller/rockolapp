@@ -1,0 +1,8 @@
+.next/
+node_modules/
+.agent/
+.agents/
+public/
+dist/
+build/
+lint_output.txt

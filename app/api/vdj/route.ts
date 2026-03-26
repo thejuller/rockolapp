@@ -3,12 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, script, ngrokUrl, bearerToken } = body;
+    const { action, script } = body;
+    const ngrokUrl = process.env.VDJ_NGROK_URL;
+    const bearerToken = process.env.VDJ_TOKEN;
 
-    if (!action || !script || !ngrokUrl) {
+    if (!action || !script) {
       return NextResponse.json(
-        { ok: false, error: "Faltan parámetros: action, script, ngrokUrl" },
+        { ok: false, error: "Faltan parámetros: action, script" },
         { status: 400 }
+      );
+    }
+
+    if (!ngrokUrl) {
+      return NextResponse.json(
+        { ok: false, error: "Configuración del servidor incompleta (VDJ_NGROK_URL)" },
+        { status: 500 }
       );
     }
 

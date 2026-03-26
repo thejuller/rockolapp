@@ -33,3 +33,7 @@
 | 25/03 | Fix Foco VDJ: Focus forzado para resultados de red Deezer | `lib/store.ts` | Hack `action_macro 'tab'` para seleccionar canción |
 | 25/03 | **Precisión Búsqueda**: Fallback a iteración + verificación | `lib/store.ts` | Algoritmo match "Artista + Título" evita colisiones ("Maria") |
 | 25/03 | **Unificación buscador**: Eliminación de tabs VDJ/Deezer | `lib/store.ts` | Interfaz única; VDJ resuelve prioridad local al añadir |
+| 25/03 | **Modo Rockola**: Credenciales estáticas en Backend env | `api/vdj`, `store` | Eliminado `/setup`. Proxies leen tokens del `.env` de Vercel |
+| 25/03 | **Rediseño UI/UX Premium**: Estética Unplugged (Oswald/Inter) | `globals.css`, `layout.tsx`, `components/*` | Implementar estilos y fuentes |
+| 25/03 | **Optimización Móvil (ui-ux-pro-max)**: touch targets ≥44px, safe areas, reduced motion, responsive breakpoints, tap delay eliminado, botón PEDIR full-width en ≤480px | `globals.css`, `layout.tsx`, `SearchBar.tsx`, `TrackCard.tsx`, `AutomixQueue.tsx`, `dashboard/page.tsx` | Verificar producción |
+| 25/03 | Configuración: Detección automática de IP (remover --hostname) | `package.json` | Reiniciar servidor dev |

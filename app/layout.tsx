@@ -1,23 +1,30 @@
-import type { Metadata } from "next";
-import { Outfit, JetBrains_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains",
+const oswald = Oswald({
+  variable: "--font-oswald",
   subsets: ["latin"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",  // Habilita safe-area-inset para notch
+};
 
 export const metadata: Metadata = {
-  title: "VirtualDJ Remote",
+  title: "VirtualDJ Remote | Rockola Premium",
   description:
-    "Control remoto web para Virtual DJ — busca, añade a la cola y controla tu sesión desde cualquier dispositivo.",
+    "Control remoto web para Virtual DJ — busca, añade a la cola y controla tu sesión desde cualquier dispositivo con una interfaz premium.",
 };
 
 export default function RootLayout({
@@ -26,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${outfit.variable} ${jetbrainsMono.variable}`}>
+    <html lang="es" className={`${inter.variable} ${oswald.variable}`}>
       <body>{children}</body>
     </html>
   );

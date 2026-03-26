@@ -1,94 +1,69 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import { useAppStore } from "@/lib/store";
+import { ListMusic, RefreshCw, Music } from "lucide-react";
 
 export function AutomixQueue() {
-  const { automixQueue, isLoadingQueue, refreshQueue, ngrokUrl } =
-    useAppStore();
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { automixQueue, refreshQueue, isLoadingQueue } = useAppStore();
 
   useEffect(() => {
-    if (!ngrokUrl) return;
-
     refreshQueue();
-
-    // Polling cada 3 segundos
-    intervalRef.current = setInterval(() => {
-      refreshQueue();
-    }, 3000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [ngrokUrl, refreshQueue]);
+    // Refresco automático cada 30 segundos
+    const interval = setInterval(refreshQueue, 30000);
+    return () => clearInterval(interval);
+  }, [refreshQueue]);
 
   return (
-    <div className="card" style={{ overflow: "hidden" }}>
-      <div
-        style={{
-          padding: "0.875rem 1rem",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <h3>Cola Automix</h3>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          {isLoadingQueue && <span className="spinner" />}
-          <button
-            className="btn btn-icon"
-            onClick={() => refreshQueue()}
-            title="Refrescar cola"
-          >
-            ↻
-          </button>
-        </div>
-      </div>
-
-      {automixQueue.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">📋</div>
-          <p>La cola está vacía</p>
-          <p
-            style={{
-              fontSize: "0.8125rem",
-              marginTop: "0.375rem",
-              color: "var(--text-muted)",
-            }}
-          >
-            Busca una canción y añádela con el botón ＋
-          </p>
-        </div>
-      ) : (
-        <div
-          style={{
-            maxHeight: "calc(100dvh - 260px)",
-            overflowY: "auto",
+    <div className="card queue-container animate-in" style={{ animationDelay: '200ms' }}>
+      <div className="queue-header">
+        <h3 className="section-title" style={{ margin: 0 }}>
+          <ListMusic size={18} className="text-accent" />
+          Próximas en la Rokola
+        </h3>
+        
+        <button
+          className="btn-ghost btn-icon"
+          onClick={refreshQueue}
+          disabled={isLoadingQueue}
+          title="Refrescar Cola"
+          aria-label="Refrescar cola de reproducción"
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            minWidth: '44px',
+            minHeight: '44px',
+            padding: '0.5rem'
           }}
         >
-          <AnimatePresence mode="popLayout">
-            {automixQueue.map((track, i) => (
-              <motion.div
-                key={track.id}
-                className="queue-item"
-                initial={{ opacity: 0, x: 12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -12 }}
-                transition={{ duration: 0.15 }}
-              >
-                <span className="queue-number">{i + 1}</span>
-                <div className="track-info">
-                  <div className="track-title">{track.title}</div>
-                  {track.artist && (
-                    <div className="track-artist">{track.artist}</div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          <RefreshCw size={16} className={isLoadingQueue ? "animate-spin" : ""} />
+        </button>
+      </div>
+
+      <div className="queue-list">
+        {automixQueue.length > 0 ? (
+          automixQueue.map((track, i) => (
+            <div key={track.id} className="queue-item">
+              <span className="queue-index">{i + 1}</span>
+              <div className="track-meta">
+                <span className="track-title" style={{ fontSize: '0.875rem' }}>{track.title}</span>
+                <span className="track-artist" style={{ fontSize: '0.75rem' }}>{track.artist}</span>
+              </div>
+              <Music size={14} className="text-muted" />
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>
+            <p style={{ fontSize: '0.875rem' }}>La cola está vacía.</p>
+            <p style={{ fontSize: '0.75rem' }}>¡Pide una canción!</p>
+          </div>
+        )}
+      </div>
+
+      {isLoadingQueue && automixQueue.length === 0 && (
+        <div style={{ padding: '1rem', textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto' }} />
         </div>
       )}
     </div>
